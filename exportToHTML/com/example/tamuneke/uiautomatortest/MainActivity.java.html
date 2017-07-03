@@ -1,0 +1,207 @@
+<html>
+<head>
+<title>MainActivity.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: #999999; font-weight: normal; font-style: normal; }
+.s0 { color: rgb(0,0,128); font-weight: bold; }
+.s1 { color: rgb(0,0,0); }
+.s2 { color: rgb(0,0,255); }
+.s3 { color: rgb(0,128,0); font-weight: bold; }
+.s4 { color: rgb(128,128,128); font-style: italic; }
+</style>
+</head>
+<BODY BGCOLOR="#ffffff">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+MainActivity.java</FONT>
+</center></TD></TR></TABLE>
+<pre>
+<span class="s0">package </span><span class="s1">com.example.tamuneke.uiautomatortest; 
+ 
+</span><span class="s0">import </span><span class="s1">android.app.Activity; 
+</span><span class="s0">import </span><span class="s1">android.content.Intent; 
+</span><span class="s0">import </span><span class="s1">android.content.IntentFilter; 
+</span><span class="s0">import </span><span class="s1">android.os.Bundle; 
+</span><span class="s0">import </span><span class="s1">android.util.Log; 
+</span><span class="s0">import </span><span class="s1">android.view.View; 
+</span><span class="s0">import </span><span class="s1">android.widget.EditText; 
+</span><span class="s0">import </span><span class="s1">android.widget.LinearLayout; 
+</span><span class="s0">import </span><span class="s1">android.widget.TextView; 
+ 
+</span><span class="s0">import </span><span class="s1">java.io.BufferedReader; 
+</span><span class="s0">import </span><span class="s1">java.io.IOException; 
+</span><span class="s0">import </span><span class="s1">java.io.InputStreamReader; 
+</span><span class="s0">import </span><span class="s1">java.io.PrintWriter; 
+</span><span class="s0">import </span><span class="s1">java.net.ServerSocket; 
+</span><span class="s0">import </span><span class="s1">java.net.Socket; 
+ 
+</span><span class="s0">public class </span><span class="s1">MainActivity </span><span class="s0">extends </span><span class="s1">Activity { 
+    </span><span class="s0">private </span><span class="s1">String TAG = </span><span class="s0">this</span><span class="s1">.getClass().getSimpleName(); 
+    </span><span class="s0">private </span><span class="s1">ServerSocket server; 
+    </span><span class="s0">private </span><span class="s1">Socket client; 
+    </span><span class="s0">private </span><span class="s1">BufferedReader mInputReader; 
+    </span><span class="s0">private </span><span class="s1">PrintWriter mOutputWriter; 
+    </span><span class="s0">private </span><span class="s1">String mSocketResponse; 
+    </span><span class="s0">private </span><span class="s1">EditText text; 
+    </span><span class="s0">private </span><span class="s1">TextView textView; 
+    </span><span class="s0">private </span><span class="s1">LinearLayout linearLayout; 
+    </span><span class="s0">private </span><span class="s1">ShutdownReceiver mReceiver; 
+ 
+    @Override 
+    </span><span class="s0">public void </span><span class="s1">onCreate(Bundle savedInstanceState) { 
+        </span><span class="s0">super</span><span class="s1">.onCreate(savedInstanceState); 
+        setContentView(R.layout.activity_main); 
+ 
+        IntentFilter filter = </span><span class="s0">new </span><span class="s1">IntentFilter(Intent.ACTION_SHUTDOWN); 
+        mReceiver = </span><span class="s0">new </span><span class="s1">ShutdownReceiver(); 
+        registerReceiver(mReceiver, filter); 
+ 
+        text = (EditText)findViewById(R.id.editText); 
+        linearLayout = (LinearLayout)findViewById(R.id.linearLayout); 
+ 
+ 
+ 
+        startServer(); 
+ 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">startServer() { 
+        </span><span class="s0">new </span><span class="s1">Thread(</span><span class="s0">new </span><span class="s1">Runnable() { 
+ 
+            @Override 
+            </span><span class="s0">public void </span><span class="s1">run() { 
+                acceptConnectionFromHost(); 
+            } 
+        }).start(); 
+ 
+    } 
+ 
+    </span><span class="s0">private void </span><span class="s1">acceptConnectionFromHost() { 
+        </span><span class="s0">try </span><span class="s1">{ 
+            server = </span><span class="s0">new </span><span class="s1">ServerSocket(</span><span class="s2">3007</span><span class="s1">); 
+ 
+            server.setSoTimeout(</span><span class="s2">500 </span><span class="s1">* </span><span class="s2">10000</span><span class="s1">); 
+            client = server.accept(); 
+            </span><span class="s0">if </span><span class="s1">(client.isConnected()) { 
+                mInputReader = </span><span class="s0">new </span><span class="s1">BufferedReader(</span><span class="s0">new </span><span class="s1">InputStreamReader( 
+                        client.getInputStream())); 
+                mOutputWriter = </span><span class="s0">new </span><span class="s1">PrintWriter(client.getOutputStream(), </span><span class="s0">true</span><span class="s1">); 
+                </span><span class="s0">new </span><span class="s1">Thread(</span><span class="s0">new </span><span class="s1">Runnable() { 
+                    @Override 
+                    </span><span class="s0">public void </span><span class="s1">run() { 
+                        </span><span class="s0">boolean </span><span class="s1">keepRunning = </span><span class="s0">true</span><span class="s1">; 
+                        </span><span class="s0">while</span><span class="s1">(keepRunning){ 
+                                </span><span class="s0">if</span><span class="s1">(mReceiver.getAbortMsg()!=</span><span class="s0">null</span><span class="s1">) { 
+                                    sendMsgToHost(mReceiver.getAbortMsg()); 
+                                    keepRunning=</span><span class="s0">false</span><span class="s1">; 
+                                } 
+                            } 
+                        } 
+                }).start(); 
+                </span><span class="s0">new </span><span class="s1">Thread(</span><span class="s0">new </span><span class="s1">Runnable() { 
+                    @Override 
+                    </span><span class="s0">public void </span><span class="s1">run() { 
+                        </span><span class="s0">try </span><span class="s1">{ 
+ 
+                            Thread.sleep(</span><span class="s2">200</span><span class="s1">); 
+ 
+                            getMsgFromHost(); 
+                        } </span><span class="s0">catch </span><span class="s1">(InterruptedException e) { 
+                            Log.e(TAG, 
+                                    </span><span class="s3">&quot;InterruptedException &quot; </span><span class="s1">+ e.getStackTrace()); 
+                        } 
+ 
+                    } 
+ 
+                }).start(); 
+            } 
+        } </span><span class="s0">catch </span><span class="s1">(IOException e) { 
+            Log.e(TAG, 
+                    </span><span class="s3">&quot;Error while making connection with Host &quot; </span><span class="s1">+ e.toString()); 
+        } 
+    } 
+ 
+    </span><span class="s0">private void </span><span class="s1">getMsgFromHost() { 
+       </span><span class="s0">try </span><span class="s1">{ 
+            </span><span class="s0">this</span><span class="s1">.mSocketResponse = </span><span class="s3">&quot;&quot;</span><span class="s1">; 
+            </span><span class="s0">if </span><span class="s1">(client != </span><span class="s0">null</span><span class="s1">) { 
+ 
+                </span><span class="s0">while </span><span class="s1">((mSocketResponse = mInputReader.readLine()) != </span><span class="s0">null</span><span class="s1">) { 
+                    </span><span class="s0">if </span><span class="s1">(mSocketResponse != </span><span class="s0">null </span><span class="s1">&amp;&amp; !mSocketResponse.isEmpty()) { 
+                        </span><span class="s4">//Toast.makeText(getApplicationContext(), &quot;Req-&quot; + mSocketResponse, Toast.LENGTH_LONG).show();</span><span class="s1"> 
+                        </span><span class="s0">final </span><span class="s1">String req = mSocketResponse; 
+ 
+                        processAPI(req); 
+                        </span><span class="s0">if </span><span class="s1">(mSocketResponse.contains(</span><span class="s3">&quot;CloseSocketConnection&quot;</span><span class="s1">)) { 
+                            Log.i(TAG, mSocketResponse); 
+                            mOutputWriter.println(</span><span class="s3">&quot;SocketConClosed&quot;</span><span class="s1">); 
+ 
+                            </span><span class="s0">break</span><span class="s1">; 
+                        } 
+ 
+ 
+                    } 
+                } 
+            } 
+ 
+        } </span><span class="s0">catch </span><span class="s1">(IOException e) { 
+            Log.e(TAG, 
+                    </span><span class="s3">&quot;IOException while reading Ack from Host &quot;</span><span class="s1"> 
+                            + e.getStackTrace()); 
+        } 
+ 
+    } 
+ 
+    </span><span class="s0">private void </span><span class="s1">processAPI(String req) { 
+        </span><span class="s0">final </span><span class="s1">String text = req; 
+        runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() { 
+            @Override 
+            </span><span class="s0">public void </span><span class="s1">run() { 
+ 
+                TextView textView = </span><span class="s0">new </span><span class="s1">TextView(MainActivity.</span><span class="s0">this</span><span class="s1">); 
+                textView.setText(</span><span class="s3">&quot;IntelliJ: &quot;</span><span class="s1">+text); 
+                linearLayout.addView(textView); 
+ 
+            } 
+        }); 
+ 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">sendMessage(View view){ 
+        </span><span class="s0">final </span><span class="s1">String msg = text.getText().toString(); 
+        sendMsgToHost(msg); 
+        runOnUiThread(</span><span class="s0">new </span><span class="s1">Runnable() { 
+            @Override 
+            </span><span class="s0">public void </span><span class="s1">run() { 
+ 
+                TextView textView = </span><span class="s0">new </span><span class="s1">TextView(MainActivity.</span><span class="s0">this</span><span class="s1">); 
+                textView.setText(</span><span class="s3">&quot;Android: &quot;</span><span class="s1">+msg); 
+                linearLayout.addView(textView); 
+            } 
+        }); 
+        text.setText(</span><span class="s3">&quot;&quot;</span><span class="s1">); 
+ 
+    } 
+ 
+    </span><span class="s0">private void </span><span class="s1">sendMsgToHost(String msg) { 
+        mOutputWriter.println(msg); 
+        mOutputWriter.flush(); 
+        Log.i(TAG, </span><span class="s3">&quot;message &quot; </span><span class="s1">+ msg + </span><span class="s3">&quot; send to Host&quot;</span><span class="s1">); 
+ 
+    } 
+    </span><span class="s0">public void </span><span class="s1">deleteMessage(View view){ 
+        linearLayout.removeAllViews(); 
+    } 
+ 
+    @Override 
+    </span><span class="s0">public void </span><span class="s1">onDestroy() { 
+        </span><span class="s0">super</span><span class="s1">.onDestroy(); 
+        Log.d(TAG, </span><span class="s3">&quot;inside onDestroy() API&quot;</span><span class="s1">); 
+ 
+    } 
+ 
+}</span></pre>
+</body>
+</html>
